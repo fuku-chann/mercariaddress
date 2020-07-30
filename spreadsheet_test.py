@@ -33,7 +33,7 @@ options.add_argument(
    '--user-data-dir={chrom_dir_path}'.format(chrom_dir_path = '/Users/masa/Library/Application Support/Google/Chrome/Profile 3'))
 driver = webdriver.Chrome(options=options)
 
-'''
+
 # メルカリのページにアクセス
 sleep(1)
 driver.get("https://www.mercari.com/jp/mypage/listings/in_progress/")
@@ -52,24 +52,26 @@ try:
       i += 1
    #取得したリンクの住所を取得
    i = 0
+   #worksheetの全てのセルの情報を取得 forの外かも？
+   values_list = worksheet.get_all_values()
+   if not values_list == []:
+      for values in values_list:
+         con_values = ''.join(values)
+         value = con_values.strip('\n')
+   else:
+      value = values_list
    for m2inf in lists:
       driver.get(lists[i])
       #クラス名を指定して要素を特定（住所）
       profit = driver.find_elements_by_css_selector("ul.transact-info-table-cell")
-      #worksheetの全てのセルの情報を取得 forの外かも？
-      value = worksheet.get_all_values()
-      print(value)
+      #クラス名を取得して要素を特定（商品名）
+      mitm = driver.find_elements_by_css_selector(".transact-info-item.bold")
       #空白の行を取得する（取得を開始する行）
-      lastrow = len(value) + 1
-      print(lastrow)
+      lastrow = len(values_list) + 1
       #worksheetに存在しない住所のみ取得する
       if profit[6].text not in value:
         worksheet.update_cell(lastrow, 1, profit[6].text)
-      print(profit[6].text)
-      #クラス名を取得して要素を特定（商品名）
-      mitm = driver.find_elements_by_css_selector(".transact-info-item.bold")
-      worksheet.update_cell(lastrow, 2,mitm[0].text)
-      #print(mitm[0].text)
+        worksheet.update_cell(lastrow, 2, mitm[0].text)
       i += 1
       sleep(1)
 except Exception as e:
@@ -95,7 +97,7 @@ try:
    i = 0
    for yinf in lists:
       driver.get(lists[i])
-      #worksheetの全てのセルの情報を取得 forの外かも？
+      #worksheetの全てのセルの情報を取得
       value = worksheet.get_all_values()
       print(value.rstrip('\n'))
       #空白の行を取得する（取得を開始する行）
@@ -119,7 +121,7 @@ try:
       sleep(1)
 except Exception as e:
    print(e)
-'''
+
 
 # Open web (account 2)
 options = webdriver.ChromeOptions()
@@ -144,8 +146,7 @@ try:
       i += 1
    #取得したリンクの住所を取得
    i = 0
-
-   #worksheetの全てのセルの情報を取得 forの外かも？
+   #worksheetの全てのセルの情報を取得
    values_list = worksheet.get_all_values()
    if not values_list == []:
       for values in values_list:
@@ -161,37 +162,11 @@ try:
       mitm = driver.find_elements_by_css_selector(".transact-info-item.bold")
       #空白の行を取得する（取得を開始する行）
       lastrow = len(values_list) + 1
-      print(lastrow)
       #worksheetに存在しない住所のみ取得する
       if profit[6].text not in value:
         worksheet.update_cell(lastrow, 1, profit[6].text)
         worksheet.update_cell(lastrow, 2, mitm[0].text)
-      #print(profit[6].text)
-      #print(mitm[0].text)
       i += 1
       sleep(1)
-      
-
-
-   '''
-
-   for m2inf in lists:
-      driver.get(lists[i])
-      #worksheetの全てのセルの情報を取得 forの外かも？
-      value = worksheet.get_all_values()
-      print(value)
-      #空白の行を取得する（取得を開始する行）
-      lastrow = len(value) + 1
-      print(lastrow)
-      #クラス名を指定して要素を特定
-      profit = driver.find_elements_by_css_selector("ul.transact-info-table-cell")
-      print(profit[6].text)
-      mitm = driver.find_elements_by_css_selector(".transact-info-item.bold")
-      print(mitm[0].text)
-      i += 1
-      sleep(1)
-   '''
 except Exception as e:
    print(e)
-
-
