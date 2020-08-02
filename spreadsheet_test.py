@@ -26,13 +26,21 @@ from time import sleep
 import chromedriver_binary
 import webbrowser
 
+def mersta(status, lists):
+   i = 0
+   for elm in elms:
+      sta = status[i].text
+      if '発送待ち' in sta:
+         elm = elms[i].get_attribute("href")
+         lists.append(elm)
+      i += 1
+   return lists
 
 # Open web (account 1)
 options = webdriver.ChromeOptions()
 options.add_argument(
    '--user-data-dir={chrom_dir_path}'.format(chrom_dir_path = '/Users/masa/Library/Application Support/Google/Chrome/Profile 3'))
 driver = webdriver.Chrome(options=options)
-
 
 # メルカリのページにアクセス
 sleep(1)
@@ -42,14 +50,8 @@ try:
    # 要素のクラス名を指定して取引ページの発送待ちのみURLを取得
    elms = driver.find_elements_by_class_name("mypage-item-link")
    status = driver.find_elements_by_class_name("mypage-item-body")
-   i = 0
    lists = []
-   for elm in elms:
-      sta = status[i].text
-      if '発送待ち' in sta:
-         elm = elms[i].get_attribute("href")
-         lists.append(elm)
-      i += 1
+   mersta(status, lists)
    #取得したリンクの住所を取得
    i = 0
    #worksheetの全てのセルの情報を取得 forの外かも？
@@ -95,33 +97,41 @@ try:
       i += 1
    #取得したリンクの住所を取得
    i = 0
+   #worksheetの全てのセルの情報を取得
+   values_list = worksheet.get_all_values()
+   if not values_list == []:
+      for values in values_list:
+         con_values = ''.join(values)
+         value = con_values.strip('\n')
+   else:
+      value = values_list
    for yinf in lists:
       driver.get(lists[i])
-      #worksheetの全てのセルの情報を取得
-      value = worksheet.get_all_values()
-      print(value.rstrip('\n'))
       #空白の行を取得する（取得を開始する行）
-      lastrow = len(value) + 1
-      print(lastrow)
+      lastrow = len(value_list) + 1
+      #print(lastrow)
       #クラス名を指定して落札者の情報を取得
       yname = driver.find_elements_by_css_selector(".decCnfWr")
-      worksheet.update_cell(lastrow, 1, yname[2].text)
-      print(yname[2].text)
-      worksheet.update_cell(lastrow, 1, yname[3].text)
-      print(yname[3].text)
-      worksheet.update_cell(lastrow, 1, yname[1].text)
-      print(yname[1].text)
       yitem = driver.find_elements_by_css_selector(".decItmName")
-      worksheet.update_cell(lastrow, 2, yitem[0].text)
-      print(yitem[0].text)
       ypri = driver.find_elements_by_css_selector(".decPrice")
-      worksheet.update_cell(lastrow, 3, ypri[2].text)
-      print(ypri[0].text)
+
+      if yname[1].text not in value:
+         worksheet.update_cell(lastrow, 1, yname[2].text)
+         #print(yname[2].text)
+         worksheet.update_cell(lastrow, 1, yname[3].text)
+         #print(yname[3].text)
+         worksheet.update_cell(lastrow, 1, yname[1].text)
+         #print(yname[1].text)
+         worksheet.update_cell(lastrow, 2, yitem[0].text)
+         #print(yitem[0].text)
+         worksheet.update_cell(lastrow, 3, ypri[2].text)
+         #print(ypri[0].text)
       i += 1
       sleep(1)
 except Exception as e:
    print(e)
-
+#全てのウインドウを閉じる
+driver.quit()
 
 # Open web (account 2)
 options = webdriver.ChromeOptions()
@@ -132,18 +142,22 @@ driver = webdriver.Chrome(options=options)
 # メルカリのページにアクセス
 sleep(1)
 driver.get('https://www.mercari.com/jp/mypage/listings/in_progress/')
+
 try:
    # 要素のクラス名を指定して取引ページの発送待ちのみURLを取得
    elms = driver.find_elements_by_class_name("mypage-item-link")
    status = driver.find_elements_by_class_name("mypage-item-body")
-   i = 0
    lists = []
+   mersta(status, lists)
+   '''
+   i = 0
    for elm in elms:
       sta = status[i].text
       if '発送待ち' in sta:
          elm = elms[i].get_attribute("href")
          lists.append(elm)
       i += 1
+   '''
    #取得したリンクの住所を取得
    i = 0
    #worksheetの全てのセルの情報を取得
@@ -170,3 +184,6 @@ try:
       sleep(1)
 except Exception as e:
    print(e)
+sleep(3)
+#全てのウインドウを閉じる
+driver.quit()
