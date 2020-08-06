@@ -54,31 +54,27 @@ try:
    mersta(status, lists)
    #取得したリンクの住所を取得
    i = 0
-   #worksheetの全てのセルの情報を取得 forの外かも？
+   #worksheetの全てのセルの情報を取得
    values_list = worksheet.get_all_values()
-   if not values_list == []:
-      for values in values_list:
-         con_values = ''.join(values)
-         value = con_values.strip('\n')
-   else:
-      value = values_list
+   con_values = ''.join(sum(values_list,[]))
    for m2inf in lists:
       driver.get(lists[i])
       #クラス名を指定して要素を特定（住所）
       profit = driver.find_elements_by_css_selector("ul.transact-info-table-cell")
       #クラス名を取得して要素を特定（商品名）
       mitm = driver.find_elements_by_css_selector(".transact-info-item.bold")
-      #空白の行を取得する（取得を開始する行）
-      lastrow = len(values_list) + 1
       #worksheetに存在しない住所のみ取得する
-      if profit[6].text not in value:
+      if profit[6].text not in con_values:
+        #空白の行を取得する（取得を開始する行）
+        lastrow = len(values_list) + 1 + i
         worksheet.update_cell(lastrow, 1, profit[6].text)
         worksheet.update_cell(lastrow, 2, mitm[0].text)
-      i += 1
+        i += 1
       sleep(1)
 except Exception as e:
    print(e)
 
+'''
 #ヤフオクマイページにアクセス
 sleep(1)
 driver.get('https://auctions.yahoo.co.jp/closeduser/jp/show/mystatus?select=closed&hasWinner=1')
@@ -108,7 +104,7 @@ try:
    for yinf in lists:
       driver.get(lists[i])
       #空白の行を取得する（取得を開始する行）
-      lastrow = len(value_list) + 1
+      lastrow = len(value_list) + 1 + i
       #print(lastrow)
       #クラス名を指定して落札者の情報を取得
       yname = driver.find_elements_by_css_selector(".decCnfWr")
@@ -130,8 +126,11 @@ try:
       sleep(1)
 except Exception as e:
    print(e)
+'''
+sleep(1)
 #全てのウインドウを閉じる
 driver.quit()
+
 
 # Open web (account 2)
 options = webdriver.ChromeOptions()
@@ -149,41 +148,27 @@ try:
    status = driver.find_elements_by_class_name("mypage-item-body")
    lists = []
    mersta(status, lists)
-   '''
-   i = 0
-   for elm in elms:
-      sta = status[i].text
-      if '発送待ち' in sta:
-         elm = elms[i].get_attribute("href")
-         lists.append(elm)
-      i += 1
-   '''
    #取得したリンクの住所を取得
    i = 0
    #worksheetの全てのセルの情報を取得
    values_list = worksheet.get_all_values()
-   if not values_list == []:
-      for values in values_list:
-         con_values = ''.join(values)
-         value = con_values.strip('\n')
-   else:
-      value = values_list
+   con_values = ''.join(sum(values_list,[]))
    for m2inf in lists:
       driver.get(lists[i])
       #クラス名を指定して要素を特定（住所）
       profit = driver.find_elements_by_css_selector("ul.transact-info-table-cell")
       #クラス名を取得して要素を特定（商品名）
       mitm = driver.find_elements_by_css_selector(".transact-info-item.bold")
-      #空白の行を取得する（取得を開始する行）
-      lastrow = len(values_list) + 1
       #worksheetに存在しない住所のみ取得する
-      if profit[6].text not in value:
+      if prifit[6].text not in con_values:
+        #空白の行を取得する（取得を開始する行）
+        lastrow = len(values_list) + 1 + i
         worksheet.update_cell(lastrow, 1, profit[6].text)
         worksheet.update_cell(lastrow, 2, mitm[0].text)
-      i += 1
+        i += 1
       sleep(1)
 except Exception as e:
    print(e)
-sleep(3)
+sleep(1)
 #全てのウインドウを閉じる
 driver.quit()
