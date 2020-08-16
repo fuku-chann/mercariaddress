@@ -26,6 +26,10 @@ from time import sleep
 import chromedriver_binary
 import webbrowser
 
+
+#ワークシートの値を全てクリアする
+worksheet.clear()
+
 def mersta(status, lists):
    i = 0
    for elm in elms:
@@ -36,11 +40,33 @@ def mersta(status, lists):
       i += 1
    return lists
 
+def mercon_values():
+   #worksheetの全てのセルの情報を取得
+   values_list = worksheet.get_all_values()
+   con_values = ''.join(sum(values_list,[]))
+   i = 0
+   for minf in lists:
+      driver.get(lists[i])
+      #クラス名を指定して要素を特定（住所）
+      profit = driver.find_elements_by_css_selector("ul.transact-info-table-cell")
+      #クラス名を取得して要素を特定（商品名）
+      mitm = driver.find_elements_by_css_selector(".transact-info-item.bold")
+      #worksheetに存在しない住所のみ取得する
+      if profit[6].text not in con_values:
+        #空白の行を取得する（取得を開始する行）
+        lastrow = len(values_list) + 1 + i
+        worksheet.update_cell(lastrow, 1, profit[6].text)
+        worksheet.update_cell(lastrow, 2, "M " + mitm[0].text)
+        i += 1
+      sleep(1)
+
+
 # Open web (account 1)
 options = webdriver.ChromeOptions()
 options.add_argument(
    '--user-data-dir={chrom_dir_path}'.format(chrom_dir_path = '/Users/masa/Library/Application Support/Google/Chrome/Profile 3'))
 driver = webdriver.Chrome(options=options)
+
 
 # メルカリのページにアクセス
 sleep(1)
@@ -52,29 +78,10 @@ try:
    status = driver.find_elements_by_class_name("mypage-item-body")
    lists = []
    mersta(status, lists)
-   #取得したリンクの住所を取得
-   i = 0
-   #worksheetの全てのセルの情報を取得
-   values_list = worksheet.get_all_values()
-   con_values = ''.join(sum(values_list,[]))
-   for m2inf in lists:
-      driver.get(lists[i])
-      #クラス名を指定して要素を特定（住所）
-      profit = driver.find_elements_by_css_selector("ul.transact-info-table-cell")
-      #クラス名を取得して要素を特定（商品名）
-      mitm = driver.find_elements_by_css_selector(".transact-info-item.bold")
-      #worksheetに存在しない住所のみ取得する
-      if profit[6].text not in con_values:
-        #空白の行を取得する（取得を開始する行）
-        lastrow = len(values_list) + 1 + i
-        worksheet.update_cell(lastrow, 1, profit[6].text)
-        worksheet.update_cell(lastrow, 2, mitm[0].text)
-        i += 1
-      sleep(1)
+   mercon_values()
 except Exception as e:
    print(e)
 
-'''
 #ヤフオクマイページにアクセス
 sleep(1)
 driver.get('https://auctions.yahoo.co.jp/closeduser/jp/show/mystatus?select=closed&hasWinner=1')
@@ -93,44 +100,75 @@ try:
       i += 1
    #取得したリンクの住所を取得
    i = 0
+
    #worksheetの全てのセルの情報を取得
    values_list = worksheet.get_all_values()
+   con_values = ''.join(sum(values_list,[]))
    if not values_list == []:
       for values in values_list:
          con_values = ''.join(values)
          value = con_values.strip('\n')
    else:
       value = values_list
+
    for yinf in lists:
       driver.get(lists[i])
       #空白の行を取得する（取得を開始する行）
-      lastrow = len(value_list) + 1 + i
-      #print(lastrow)
+      lastrow = len(values_list) + 1 + i
       #クラス名を指定して落札者の情報を取得
       yname = driver.find_elements_by_css_selector(".decCnfWr")
       yitem = driver.find_elements_by_css_selector(".decItmName")
       ypri = driver.find_elements_by_css_selector(".decPrice")
 
-      if yname[1].text not in value:
-         worksheet.update_cell(lastrow, 1, yname[2].text)
-         #print(yname[2].text)
-         worksheet.update_cell(lastrow, 1, yname[3].text)
-         #print(yname[3].text)
-         worksheet.update_cell(lastrow, 1, yname[1].text)
-         #print(yname[1].text)
-         worksheet.update_cell(lastrow, 2, yitem[0].text)
-         #print(yitem[0].text)
-         worksheet.update_cell(lastrow, 3, ypri[2].text)
-         #print(ypri[0].text)
+      if yname[1].text not in con_values:
+         worksheet.update_cell(lastrow, 1, yname[2].text + '\n' + yname[3].text + '\n' + yname[1].text + " 様")
+         worksheet.update_cell(lastrow, 2, "Y " + yitem[0].text)
       i += 1
       sleep(1)
 except Exception as e:
    print(e)
-'''
-sleep(1)
-#全てのウインドウを閉じる
-driver.quit()
 
+# ラクマページにアクセス
+sleep(1)
+driver.get("https://fril.jp/sell#trading")
+try:
+   sleep(1)
+   # 要素のクラス名を指定して取引ページの発送待ちのみURLを取得
+   relms = driver.find_elements_by_class_name("information-pane")
+   i = 0
+   lists = []
+   for relm in relms:
+      relmt = relm.text
+      if "商品の発送" in relmt:
+         rmsga = relm.find_element_by_css_selector("a")
+         url = rmsga.get_attribute("href")
+         lists.append(url)
+      i += 1
+   i = 0
+   #worksheetの全てのセルの情報を取得
+   values_list = worksheet.get_all_values()
+   con_values = ''.join(sum(values_list,[]))
+   for rinf in lists:
+      driver.get(lists[i])
+      #空白の行を取得する（取得を開始する行）
+      lastrow = len(values_list) + 1 + i
+      #クラス名を指定して要素を特定（住所）
+      profit = driver.find_elements_by_css_selector('.col.s12')
+      #クラス名を取得して要素を特定（商品名）
+      ritm = driver.find_elements_by_css_selector('.item_name')
+      #worksheetに存在しない住所のみ取得する
+      if profit[3].text not in con_values:
+        #空白の行を取得する（取得を開始する行）
+        lastrow = len(values_list) + 1 + i
+        worksheet.update_cell(lastrow, 1, profit[7].text)
+        worksheet.update_cell(lastrow, 2, "R " + ritm[0].text)
+        i += 1
+      sleep(1)
+except Exception as e:
+   print(e)
+sleep(1)
+#全てのウインドウを閉じる1
+driver.quit()
 
 # Open web (account 2)
 options = webdriver.ChromeOptions()
@@ -148,25 +186,7 @@ try:
    status = driver.find_elements_by_class_name("mypage-item-body")
    lists = []
    mersta(status, lists)
-   #取得したリンクの住所を取得
-   i = 0
-   #worksheetの全てのセルの情報を取得
-   values_list = worksheet.get_all_values()
-   con_values = ''.join(sum(values_list,[]))
-   for m2inf in lists:
-      driver.get(lists[i])
-      #クラス名を指定して要素を特定（住所）
-      profit = driver.find_elements_by_css_selector("ul.transact-info-table-cell")
-      #クラス名を取得して要素を特定（商品名）
-      mitm = driver.find_elements_by_css_selector(".transact-info-item.bold")
-      #worksheetに存在しない住所のみ取得する
-      if prifit[6].text not in con_values:
-        #空白の行を取得する（取得を開始する行）
-        lastrow = len(values_list) + 1 + i
-        worksheet.update_cell(lastrow, 1, profit[6].text)
-        worksheet.update_cell(lastrow, 2, mitm[0].text)
-        i += 1
-      sleep(1)
+   mercon_values()
 except Exception as e:
    print(e)
 sleep(1)
